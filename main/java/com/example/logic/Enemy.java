@@ -1,11 +1,11 @@
 package com.example.logic;
 
-class Enemy {
-    String type;
-    int health;
-    int maxHealth;
-    int damage;
-    boolean enraged;
+public class Enemy {
+    public String type;
+    public int health;
+    public int maxHealth;
+    public int damage;
+    public boolean enraged;
 
     public Enemy(String type, int health, int damage) {
         this.type = type;

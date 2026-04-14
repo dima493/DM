@@ -21,6 +21,7 @@ public class Game {
     public boolean holyShieldActive = false;
     public GameState currentState = GameState.ENTER_NAME;
     public Enemy currentEnemy;
+    public double difficult;
 
     public Game(GameEventListener listener) {
         this.listener = listener;
@@ -29,7 +30,6 @@ public class Game {
         listener.onGameOutput("=== ВІТАЄМО У DUNGEON MASTER ===\n");
         listener.onGameOutput("ВВЕДІТЬ ВАШЕ ІМ'Я:");
     }
-
 
     public void processInput(String input) {
         switch (currentState) {
@@ -152,16 +152,16 @@ public class Game {
     private void generateEnemies() {
         enemies.clear();
 
-        double multiplier = 1.0;
-        if (GameConfig.difficulty.equals("ЛЕГКО")) multiplier = 0.5;
-        else if (GameConfig.difficulty.equals("ВАЖКО")) multiplier = 1.5;
-        else if (GameConfig.difficulty.equals("DARK SOULS")) multiplier = 3.0;
+        difficult = 1.0;
+        if (GameConfig.difficulty.equals("ЛЕГКО")) difficult = 0.5;
+        else if (GameConfig.difficulty.equals("ВАЖКО")) difficult = 1.5;
+        else if (GameConfig.difficulty.equals("DARK SOULS")) difficult = 3.0;
 
         for (int i = 0; i < 3; i++) {
-            enemies.add(new Enemy("ГОБЛІН", (int)(20 * multiplier), (int)(5 * multiplier)));
+            enemies.add(new Enemy("ГОБЛІН", (int)(20 * difficult), (int)(5 * difficult)));
         }
 
-        enemies.add(new Enemy("БОС", (int)(60 * multiplier), (int)(10 * multiplier)));
+        enemies.add(new Enemy("БОС", (int)(60 * difficult), (int)(10 * difficult)));
     }
 
     private void generateSurvivalEnemies() {
@@ -280,7 +280,7 @@ public class Game {
                 defeatedEnemies++;
                 listener.onGameOutput("\nПЕРЕМОГА! " + currentEnemy.type + " ПОВАЛЕНИЙ!");
 
-                int victoryHeal = (int) (chosenCharacter.maxHealth * 0.2);
+                int victoryHeal = (int) (6 / difficult);
                 chosenCharacter.health = Math.min(chosenCharacter.maxHealth, chosenCharacter.health + victoryHeal);
                 listener.onGameOutput("Ви відпочили та відновили " + victoryHeal + " HP.");
 

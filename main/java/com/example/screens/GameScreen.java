@@ -1,6 +1,5 @@
 package com.example.screens;
 
-import com.example.base.BaseScreen;
 import com.example.logic.Game;
 import com.example.logic.GameConfig;
 import com.example.logic.GameEventListener;
@@ -11,6 +10,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -23,10 +25,17 @@ import java.util.Queue;
 
 public class GameScreen implements GameEventListener, ScreenNavigator {
     private Game game;
-    private Label hpLabel;
-    private ProgressBar hpBar;
+    private VBox playerUnit;
+    private VBox enemyUnit;
+    private ProgressBar playerHpBar;
+    private Label playerHpLabel;
+    private ProgressBar enemyHpBar;
+    private Label enemyHpLabel;
     private TextArea gameOutput;
     private TextField playerInput;
+    private ImageView playerPortrait;
+    private ImageView weaponPortrait;
+    private StackPane playerSpriteContainer;
 
     private StackPane root;
     private StartScreen startScreen;
@@ -40,21 +49,13 @@ public class GameScreen implements GameEventListener, ScreenNavigator {
     private final Queue<String> outputQueue = new LinkedList<>();
 
     private VBox createGameLayout() {
-        VBox mainLayout = new VBox(16);
-        mainLayout.setPadding(new Insets(20));
+        VBox mainLayout = new VBox(10);
+        mainLayout.setPadding(new Insets(10));
         mainLayout.setAlignment(Pos.CENTER);
         mainLayout.getStyleClass().add("game-root"); // Стилі в CSS
         // 1. Заголовок
         Label title = new Label("DUNGEON MASTER");
         title.getStyleClass().add("title-label");
-
-        // 2. Секція HP (важливо: hpBar та hpLabel мають бути полями класу GameScreen)
-        this.hpLabel = new Label("HP: 100/100");
-        this.hpBar = new ProgressBar(1.0);
-        this.hpBar.setPrefWidth(300);
-
-        HBox hpBox = new HBox(10, hpLabel, hpBar);
-        hpBox.setAlignment(Pos.CENTER);
 
         this.gameOutput = new TextArea();
         this.gameOutput.setEditable(false);
@@ -76,9 +77,84 @@ public class GameScreen implements GameEventListener, ScreenNavigator {
         HBox inputLayout = new HBox(10, playerInput, actionButton);
         inputLayout.setAlignment(Pos.CENTER);
 
-        mainLayout.getChildren().addAll(title, hpBox, gameOutput, inputLayout, toMenuButton);
+        VBox imageSection = new VBox(10); // Контейнер з відступом
+        imageSection.setAlignment(Pos.CENTER);
+
+        // 2. Контейнер для самих портретів
+        GridPane spriteGrid = new GridPane(); // GridPane краще для вирівнювання у сітку
+        spriteGrid.setHgap(40); // Відступи між картинками по горизонталі
+        spriteGrid.setVgap(10); // Відступи по вертикалі (не обов'язково для одного ряду)
+        spriteGrid.setAlignment(Pos.CENTER);
+
+        // --- ПЕРСОНАЖ ГРАВЦЯ ---
+        this.playerUnit = new VBox(5);
+        this.playerUnit.setAlignment(Pos.CENTER);
+
+        this.playerHpLabel = new Label("HP: 100/100");
+        this.playerHpBar = new ProgressBar(1.0);
+        this.playerHpBar.setPrefWidth(100);
+        this.playerHpBar.setStyle("-fx-accent: #00ff00;");
+
+        this.playerPortrait = new ImageView();
+        this.playerPortrait.setFitWidth(128);
+        this.playerPortrait.setFitHeight(128);
+        this.playerPortrait.setSmooth(false);
+
+        this.weaponPortrait = new ImageView();
+        this.weaponPortrait.setFitWidth(128);
+        this.weaponPortrait.setFitHeight(128);
+        this.weaponPortrait.setSmooth(false);
+
+        StackPane playerSprites = new StackPane(weaponPortrait, playerPortrait);
+        playerUnit.getChildren().addAll(playerHpLabel, playerHpBar, playerSprites);
+
+        this.weaponPortrait.setVisible(false);
+        this.playerUnit.setVisible(false);
+
+        // --- ВОРОГ ---
+        this.enemyUnit = new VBox(5); // Контейнер для ворога
+        this.enemyUnit.setAlignment(Pos.CENTER);
+
+        this.enemyHpLabel = new Label("HP: 100/100");
+        this.enemyHpBar = new ProgressBar(1.0);
+        this.enemyHpBar.setPrefWidth(100);
+        this.enemyHpBar.setStyle("-fx-accent: #00ff00;");
+
+        // 3. СтворенняImageView для кожного персонажа
+        ImageView enemyImg = createPortrait("/images/enemy.png");
+        this.enemyUnit.getChildren().addAll(enemyHpLabel, enemyHpBar, enemyImg);
+
+        this.enemyUnit.setVisible(false);
+        this.enemyHpLabel.setVisible(false);
+        this.enemyHpBar.setVisible(false);
+
+        spriteGrid.add(playerUnit, 0, 0);
+        spriteGrid.add(enemyUnit, 1, 0);
+
+        // Збираємо всю секцію разом
+        imageSection.getChildren().addAll(spriteGrid);
+
+        mainLayout.getChildren().addAll(title, imageSection, gameOutput, inputLayout, toMenuButton);
 
         return mainLayout;
+    }
+
+    private ImageView createPortrait(String imagePath) {
+        try {
+            Image img = new Image(getClass().getResourceAsStream(imagePath));
+            ImageView iv = new ImageView(img);
+
+            // ВСТАНОВЛЮЄМО РОЗМІР 32x32
+            iv.setFitWidth(128);
+            iv.setFitHeight(128);
+            iv.setPreserveRatio(true); // Зберігати пропорції (для pixel art)
+            iv.setSmooth(false);
+
+            return iv;
+        } catch (Exception e) {
+            System.out.println("Не вдалося завантажити спрайт: " + imagePath);
+            return new ImageView(); // Повертаємо пустий об'єкт, щоб не впало
+        }
     }
 
     public void start(Stage stage) {
@@ -113,15 +189,104 @@ public class GameScreen implements GameEventListener, ScreenNavigator {
     public void startGame() {
         updateHpBar();
     }
+    private String getCharacterImagePath(String characterName) {
+        if (characterName == null) return "/images/swordsman.png";
 
+        switch (characterName) {
+            case "ЛИЦАР": return "/images/swordsman.png";
+            case "ЛУЧНИК": return "/images/archer.png";
+            case "АНГЕЛ": return "/images/swordsman.png";
+            case "ДЕМОН": return "/images/swordsman.png";
+            case "ТЕМНИЙ МАГ": return "/images/swordsman.png";
+            default: return "/images/swordsman.png";
+        }
+    }
+
+    private String getWeaponImagePath(String weaponName) {
+        if (weaponName == null) return "/images/empty.png";
+
+        String name = weaponName.toLowerCase();
+        if (name.contains("меч")) return "/images/sword.png";
+        if (name.contains("лук")) return "/images/bow.png";
+        if (name.contains("сокира")) return "/images/axe128.png";
+        if (name.contains("посох")) return "/images/staff128.png";
+        if (name.contains("клинок")) return "/images/blade128.png";
+
+        return "/images/sword.png"; // Дефолт
+    }
     private void updateHpBar() {
-        if (game != null && game.chosenCharacter != null) {
-            hpLabel.setText("HP: " + game.chosenCharacter.health + "/" + game.chosenCharacter.maxHealth);
-            double progress = Math.max(0, (double) game.chosenCharacter.health / game.chosenCharacter.maxHealth);
-            hpBar.setProgress(progress);
+        if (game == null) return;
+
+        // --- 1. ОНОВЛЕННЯ ГРАВЦЯ (Персонаж + Зброя) ---
+        if (game.chosenCharacter != null) {
+            // Оновлюємо спрайт персонажа
+            String charPath = getCharacterImagePath(game.chosenCharacter.name);
+            updateImageIfChanged(playerPortrait, charPath);
+
+            // Оновлюємо спрайт зброї (якщо вона вже обрана)
+            if (game.chosenWeapon != null) {
+                String weaponPath = getWeaponImagePath(game.chosenWeapon);
+                updateImageIfChanged(weaponPortrait, weaponPath);
+                weaponPortrait.setVisible(true);
+            }
+
+            // Оновлюємо цифри та смужку HP
+            playerHpLabel.setText("HP: " + game.chosenCharacter.health + "/" + game.chosenCharacter.maxHealth);
+            double pProgress = (double) game.chosenCharacter.health / game.chosenCharacter.maxHealth;
+            playerHpBar.setProgress(Math.max(0, pProgress));
+
+            // Показуємо весь блок гравця
+            playerHpLabel.setVisible(true);
+            playerHpBar.setVisible(true);
+            playerPortrait.setVisible(true);
+        }
+
+        // --- 2. ОНОВЛЕННЯ ВОРОГА ---
+        if (game.currentEnemy != null) {
+            // Якщо у ворога теж є імена/типи, можна додати getEnemyImagePath
+            enemyHpLabel.setText(game.currentEnemy.type + " HP: " + game.currentEnemy.health + "/" + game.currentEnemy.maxHealth);
+            double eProgress = (double) game.currentEnemy.health / game.currentEnemy.maxHealth;
+            enemyHpBar.setProgress(Math.max(0, eProgress));
+
+            playerUnit.setVisible(true);
+            enemyUnit.setVisible(true);
+
+            playerHpLabel.setVisible(true);
+            playerHpBar.setVisible(true);
+            playerPortrait.setVisible(true);
+            enemyHpBar.setVisible(true);
+            enemyHpLabel.setVisible(true);
+
         } else {
-            hpLabel.setText("HP: --/--");
-            hpBar.setProgress(1.0);
+            // Ховаємо інтерфейс ворога, якщо бою немає
+            if (enemyHpLabel != null) enemyHpLabel.setVisible(false);
+            if (enemyHpBar != null) enemyHpBar.setVisible(false);
+        }
+    }
+
+    private void updateImageIfChanged(ImageView iv, String path) {
+        if (path == null || path.isEmpty()) return;
+
+        // 1. Дістаємо останній шлях, який ми зберігали в "кишені" ImageView
+        String lastPath = (String) iv.getUserData();
+
+        // 2. Якщо шлях той самий — нічого не робимо, виходимо
+        if (path.equals(lastPath)) return;
+
+        try {
+            var stream = getClass().getResourceAsStream(path);
+            if (stream != null) {
+                iv.setImage(new Image(stream));
+
+                // 3. Зберігаємо новий шлях у "кишеню", щоб наступного разу порівняти
+                iv.setUserData(path);
+
+                System.out.println("Спрайт успішно оновлено: " + path);
+            } else {
+                System.err.println("Файл не знайдено: " + path);
+            }
+        } catch (Exception e) {
+            System.err.println("Помилка завантаження спрайта: " + path);
         }
     }
 
@@ -223,7 +388,7 @@ public class GameScreen implements GameEventListener, ScreenNavigator {
 
         appendToOutput("\n--- ГРА ЗАКІНЧЕНА ---");
 
-        hpBar.setStyle("-fx-accent: gray;");
+        playerHpBar.setStyle("-fx-accent: gray;");
 
         System.out.println("UI: Game over state reached.");
     }

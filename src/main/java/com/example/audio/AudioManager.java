@@ -17,25 +17,28 @@ public class AudioManager {
         private static final String MUSIC_GAME_FILE = "/audio/game-music.mp3";
         private static final String MUSIC_MENU_FILE = "/audio/start-screen.mp3";
 
+        // op 1: MenuMusic
+        // op 2: GameMusic
+
         public static void playMenuMusic() {
             stopAllMusic();
-            play(MUSIC_MENU_FILE, true);
+            play(MUSIC_MENU_FILE, 1);
         }
 
         public static void playGameMusic() {
             stopAllMusic();
-            play(MUSIC_GAME_FILE, false);
+            play(MUSIC_GAME_FILE, 2);
         }
 
-        private static void play(String path, boolean isMenu) {
+        private static void play(String path, int op) {
             try {
                 URL resource = AudioManager.class.getResource(path);
                 if (resource != null) {
                     Media media = new Media(resource.toString());
                     MediaPlayer player = new MediaPlayer(media);
 
-                    if (isMenu) menuMusicPlayer = player;
-                    else gameMusicPlayer = player;
+                    if (op == 1) menuMusicPlayer = player;
+                    if (op == 2) gameMusicPlayer = player;
 
                     player.setCycleCount(MediaPlayer.INDEFINITE);
                     player.setVolume(musicVolume);

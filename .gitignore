@@ -1,0 +1,33 @@
+# IDE and Build folders
+.idea/
+target/
+
+# Local SDKs and Dependencies
+jdk-22/
+javafx-sdk-24.0.1/
+
+# Local configuration/text files (Optional, uncomment to ignore)
+# runApp.txt
+# settings.properties
+# V5.7.xml
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+
+# Java compiled classes (just in case)
+*.class
+
+# Mac/Windows system files
+.DS_Store
+Thumbs.db
+
+.idea/workspace.xml

@@ -2,6 +2,7 @@ package com.example.base;
 
 import java.util.Objects;
 
+import com.example.audio.AudioManager;
 import com.example.logic.GameConfig;
 import com.example.navigation.ScreenNavigator;
 import javafx.geometry.Insets;
@@ -9,11 +10,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-
 
 public abstract class BaseScreen {
     protected final ScreenNavigator navigator;
@@ -59,6 +60,34 @@ public abstract class BaseScreen {
         btn.setFont(Font.font("Arial", FontWeight.BOLD , 22));
         btn.setOnAction(e -> action.run());
         layout.getChildren().add(btn);
+    }
+
+
+    // op 1:Music
+    // op 2:Sound
+    protected void addAudioSlider(String text, int op) {
+        Label name = new Label(text);
+        name.setFont(Font.font("Arial", FontWeight.BOLD, 22));
+        name.getStyleClass().add("title-label");
+
+        Slider slider = new Slider(0, 1, 0.5);
+        slider.setMaxWidth(300);
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+
+        if (op == 1) {
+            slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+                AudioManager.Music.setVolume(newValue.doubleValue());
+            });
+        }
+        if (op == 2) {
+            slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+                AudioManager.Sound.setVolume(newValue.doubleValue());
+            });
+        }
+        layout.getChildren().add(name);
+        layout.getChildren().add(slider);
+
     }
 
     public Scene getScene() { return scene; }

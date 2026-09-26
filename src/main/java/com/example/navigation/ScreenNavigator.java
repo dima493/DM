@@ -7,4 +7,5 @@ public interface ScreenNavigator {
     void showMediaScreen();
     void showGraphicScreen();
     void showGeneralScreen();
+    void showLevelScreen();
 }

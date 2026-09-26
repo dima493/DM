@@ -43,6 +43,7 @@ public class GameScreen implements GameEventListener, ScreenNavigator {
     private MediaScreen mediaScreen;
     private GeneralScreen generalScreen;
     private GraphicScreen graphicScreen;
+    private LevelScreen levelScreen;
 
     private boolean isAnimating = false;
     private Timeline currentTimeline;
@@ -165,6 +166,7 @@ public class GameScreen implements GameEventListener, ScreenNavigator {
         this.mediaScreen = new MediaScreen(this, stage);
         this.generalScreen = new GeneralScreen(this, stage);
         this.graphicScreen = new GraphicScreen(this, stage);
+        this.levelScreen = new LevelScreen(this, stage);
 
         showStartScreen();
 
@@ -442,6 +444,12 @@ public class GameScreen implements GameEventListener, ScreenNavigator {
     public void showGeneralScreen() {
         GameConfig.applyBackground(root);
         root.getChildren().setAll(generalScreen.getLayout());
+
+    }
+    @Override
+    public void showLevelScreen() {
+        GameConfig.applyBackground(root);
+        root.getChildren().setAll(levelScreen.getLayout());
 
     }
 
